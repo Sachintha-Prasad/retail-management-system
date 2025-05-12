@@ -125,7 +125,7 @@ const Login = () => {
 
         <Button
           type="submit"
-          color="primary"
+          color="default"
           fullWidth
           isLoading={isLoading}
           className="font-medium"
