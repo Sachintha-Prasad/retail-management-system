@@ -7,24 +7,29 @@ import globalErrorHandler from "./middlewares/globalErrorHandler.js"
 import logger from "./utils/winstonLogger.js"
 import productRoutes from "./routes/productRoutes.js"
 import orderRoutes from "./routes/orderRoutes.js"
+import cartRoutes from "./routes/cartRoutes.js"
+import userRoutes from "./routes/userRoutes.js"
 
 dotenv.config()
 
 const app = express()
 connectDB()
 
+app.use((req, res, next) => {
+    console.log(`→ Incoming request: ${req.method} ${req.originalUrl}`)
+    next()
+})
+
 // middlewares
 app.use(express.json())
-app.use(cors()) // ✅ fix applied
+app.use(cors())
 app.use(morganLogger)
 
 // routes
 app.use("/api/products", productRoutes)
 app.use("/api/orders", orderRoutes)
-
-app.get("/", (req, res) => {
-    res.send("API is working ✅")
-})
+app.use("/api/cart", cartRoutes)
+app.use("/api/users", userRoutes)
 
 // error handler
 app.use(globalErrorHandler)
