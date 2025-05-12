@@ -1,35 +1,36 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
-import morgan from "morgan"
 import connectDB from "./config/db.js"
-import { errorHandler } from "./middlewares/errorHandler.js"
-import logger from "./middlewares/logger.js"
+import morganLogger from "./middlewares/morganLogger.js"
+import globalErrorHandler from "./middlewares/globalErrorHandler.js"
+import logger from "./utils/winstonLogger.js"
+import productRoutes from "./routes/productRoutes.js"
+import orderRoutes from "./routes/orderRoutes.js"
 
-// load env variables
 dotenv.config()
 
-// database connection
+const app = express()
 connectDB()
 
-const app = express()
-
+// middlewares
 app.use(express.json())
-app.use(morgan("dev"))
-app.use(logger)
-app.use(
-    cors({
-        origin: "*",
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"]
-    })
-)
+app.use(cors()) // ✅ fix applied
+app.use(morganLogger)
+
+// routes
+app.use("/api/products", productRoutes)
+app.use("/api/orders", orderRoutes)
+
+app.get("/", (req, res) => {
+    res.send("API is working ✅")
+})
 
 // error handler
-app.use(errorHandler)
+app.use(globalErrorHandler)
 
-// app starts here
-const port = process.env.PORT || 5000
-app.listen(port, () => {
-    logger.info(`server running on port ${port}`)
+// start server
+const PORT = process.env.PORT || 5000
+app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`)
 })
