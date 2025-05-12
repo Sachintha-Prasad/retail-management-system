@@ -21,10 +21,10 @@ import OrderConfirmation from './pages/customer/OrderConfirmation';
 
 // Admin Pages
 import Dashboard from './pages/admin/Dashboard';
-// import ProductManagement from './pages/admin/ProductManagement';
-// import AddProduct from './pages/admin/AddProduct';
-// import EditProduct from './pages/admin/EditProduct';
-// import Orders from './pages/admin/Orders';
+import { ProductList } from './pages/admin/products/ProductList';
+import { AddProduct } from './pages/admin/products/AddProduct';
+import { EditProduct } from './pages/admin/products/EditProduct';
+import { Orders } from './pages/admin/orders/Orders';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -104,10 +104,10 @@ function App() {
         }
       >
         <Route path="/admin" element={<Dashboard />} />
-        {/* <Route path="/admin/products" element={<ProductManagement />} />
+        <Route path="/admin/products" element={<ProductList/>} />
         <Route path="/admin/products/add" element={<AddProduct />} />
         <Route path="/admin/products/edit/:id" element={<EditProduct />} />
-        <Route path="/admin/orders" element={<Orders />} /> */}
+        <Route path="/admin/orders" element={<Orders />} />
       </Route>
 
       {/* Catch all route */}
