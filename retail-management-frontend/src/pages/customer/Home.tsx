@@ -230,7 +230,7 @@ const Home = () => {
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Products</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Our most popular products that customers love.
+              Our most popular products that customers love
             </p>
           </motion.div>
 
