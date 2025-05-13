@@ -12,9 +12,9 @@ const router = express.Router()
 
 router.get("/", getAllProducts)
 router.get("/:id", getProduct)
-router.post("/", authorizeRoles("admin"), addProduct)
-router.put("/:id", authorizeRoles("admin"), updateProduct)
-router.delete("/:id", authorizeRoles("admin"), deleteProduct)
-router.patch("/:id/stock", authorizeRoles("admin"), updateStock)
+router.post("/", addProduct)
+router.put("/:id", updateProduct)
+router.delete("/:id", deleteProduct)
+router.patch("/:id/stock", updateStock)
 
 export default router
