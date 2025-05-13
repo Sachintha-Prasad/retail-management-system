@@ -1,10 +1,10 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
+import morgan from "morgan"
 import connectDB from "./config/db.js"
-import morganLogger from "./middlewares/morganLogger.js"
 import globalErrorHandler from "./middlewares/globalErrorHandler.js"
-import logger from "./utils/winstonLogger.js"
+import logger from "./utils/logger.js"
 import productRoutes from "./routes/productRoutes.js"
 import orderRoutes from "./routes/orderRoutes.js"
 import cartRoutes from "./routes/cartRoutes.js"
@@ -15,15 +15,28 @@ dotenv.config()
 const app = express()
 connectDB()
 
-app.use((req, res, next) => {
-    console.log(`→ Incoming request: ${req.method} ${req.originalUrl}`)
-    next()
-})
-
 // middlewares
 app.use(express.json())
 app.use(cors())
-app.use(morganLogger)
+
+// morgan logger
+const morganFormat = ":method :status :url :response-time ms"
+app.use(
+    morgan(morganFormat, {
+        stream: {
+            write: (message) => {
+                const logObject = {
+                    method: message.split(" ")[0],
+                    status: message.split(" ")[1],
+                    url: message.split(" ")[2],
+                    responseTime: message.split(" ")[3]
+                }
+
+                logger.info(JSON.stringify(logObject))
+            }
+        }
+    })
+)
 
 // routes
 app.use("/api/products", productRoutes)
