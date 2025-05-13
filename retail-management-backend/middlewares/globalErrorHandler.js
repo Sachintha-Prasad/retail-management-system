@@ -1,4 +1,4 @@
-import logger from "../utils/winstonLogger.js"
+import logger from "../utils/logger.js"
 
 function globalErrorHandler(error, req, res, next) {
     error.statusCode = error.statusCode || 500

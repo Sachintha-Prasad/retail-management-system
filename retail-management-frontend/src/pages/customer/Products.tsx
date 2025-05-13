@@ -1,31 +1,31 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { 
-  Button, 
-  Spinner, 
-  Input, 
-  Chip, 
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import {
+  Button,
+  Spinner,
+  Input,
+  Chip,
   Pagination,
-  Select, 
-  SelectItem 
-} from '@nextui-org/react';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { motion } from 'framer-motion';
-import ProductCard from '../../components/ui/ProductCard';
-import { getProducts, Product } from '../../data/products';
+  Select,
+  SelectItem,
+} from "@nextui-org/react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
+import { motion } from "framer-motion";
+import ProductCard from "../../components/ui/ProductCard";
+import { getProducts, Product } from "../../data/products";
 
 const Products = () => {
   const location = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [sortBy, setSortBy] = useState('featured');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+  const [sortBy, setSortBy] = useState("featured");
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  
+
   const productsPerPage = 8;
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const Products = () => {
         setProducts(data);
         setFilteredProducts(data);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       } finally {
         setIsLoading(false);
       }
@@ -48,13 +48,13 @@ const Products = () => {
   useEffect(() => {
     // Parse URL query parameters
     const params = new URLSearchParams(location.search);
-    const categoryParam = params.get('category');
-    const searchParam = params.get('search');
-    
+    const categoryParam = params.get("category");
+    const searchParam = params.get("search");
+
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
-    
+
     if (searchParam) {
       setSearchQuery(searchParam);
     }
@@ -63,7 +63,7 @@ const Products = () => {
   useEffect(() => {
     // Apply filters and sorting
     let filtered = [...products];
-    
+
     // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter(
@@ -72,74 +72,75 @@ const Products = () => {
           product.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    
+
     // Filter by category
     if (selectedCategory) {
       filtered = filtered.filter(
         (product) => product.category === selectedCategory
       );
     }
-    
+
     // Filter by price range
     if (priceRange.min) {
       filtered = filtered.filter(
         (product) => product.price >= parseFloat(priceRange.min)
       );
     }
-    
+
     if (priceRange.max) {
       filtered = filtered.filter(
         (product) => product.price <= parseFloat(priceRange.max)
       );
     }
-    
+
     // Apply sorting
     switch (sortBy) {
-      case 'priceLow':
+      case "priceLow":
         filtered.sort((a, b) => a.price - b.price);
         break;
-      case 'priceHigh':
+      case "priceHigh":
         filtered.sort((a, b) => b.price - a.price);
         break;
-      case 'newest':
+      case "newest":
         filtered.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         break;
-      case 'featured':
+      case "featured":
       default:
         filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
         break;
     }
-    
+
     setFilteredProducts(filtered);
     setPage(1); // Reset to first page when filters change
   }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     // Search is already applied via the useEffect above
   };
 
   const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('');
-    setPriceRange({ min: '', max: '' });
-    setSortBy('featured');
+    setSearchQuery("");
+    setSelectedCategory("");
+    setPriceRange({ min: "", max: "" });
+    setSortBy("featured");
   };
 
   const categories = [
-    { value: 'clothing', label: 'Clothing' },
-    { value: 'electronics', label: 'Electronics' },
-    { value: 'accessories', label: 'Accessories' },
-    { value: 'home', label: 'Home' },
+    { value: "clothing", label: "Clothing" },
+    { value: "electronics", label: "Electronics" },
+    { value: "accessories", label: "Accessories" },
+    { value: "home", label: "Home" },
   ];
 
   const sortOptions = [
-    { value: 'featured', label: 'Featured' },
-    { value: 'newest', label: 'Newest' },
-    { value: 'priceLow', label: 'Price: Low to High' },
-    { value: 'priceHigh', label: 'Price: High to Low' },
+    { value: "featured", label: "Featured" },
+    { value: "newest", label: "Newest" },
+    { value: "priceLow", label: "Price: Low to High" },
+    { value: "priceHigh", label: "Price: High to Low" },
   ];
 
   // Pagination
@@ -150,6 +151,7 @@ const Products = () => {
     indexOfLastProduct
   );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  console.log("currentProducts", currentProducts);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -174,7 +176,7 @@ const Products = () => {
               }}
             />
           </form>
-          
+
           <Button
             variant="flat"
             color="primary"
@@ -204,7 +206,12 @@ const Products = () => {
                 color="primary"
                 size="sm"
                 onClick={clearFilters}
-                isDisabled={!searchQuery && !selectedCategory && !priceRange.min && !priceRange.max}
+                isDisabled={
+                  !searchQuery &&
+                  !selectedCategory &&
+                  !priceRange.min &&
+                  !priceRange.max
+                }
               >
                 Clear All
               </Button>
@@ -237,7 +244,7 @@ const Products = () => {
                     <Button
                       variant="light"
                       size="sm"
-                      onClick={() => setSelectedCategory('')}
+                      onClick={() => setSelectedCategory("")}
                       endContent={<X size={14} />}
                       className="mt-1 p-0 h-auto"
                     >
@@ -276,7 +283,7 @@ const Products = () => {
                   <Button
                     variant="light"
                     size="sm"
-                    onClick={() => setPriceRange({ min: '', max: '' })}
+                    onClick={() => setPriceRange({ min: "", max: "" })}
                     endContent={<X size={14} />}
                     className="mt-2 p-0 h-auto"
                   >
@@ -309,7 +316,7 @@ const Products = () => {
         {showFilters && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             className="lg:hidden col-span-1"
@@ -322,7 +329,12 @@ const Products = () => {
                   color="primary"
                   size="sm"
                   onClick={clearFilters}
-                  isDisabled={!searchQuery && !selectedCategory && !priceRange.min && !priceRange.max}
+                  isDisabled={
+                    !searchQuery &&
+                    !selectedCategory &&
+                    !priceRange.min &&
+                    !priceRange.max
+                  }
                 >
                   Clear All
                 </Button>
@@ -336,11 +348,23 @@ const Products = () => {
                     {categories.map((category) => (
                       <Chip
                         key={category.value}
-                        variant={selectedCategory === category.value ? "solid" : "bordered"}
-                        color={selectedCategory === category.value ? "primary" : "default"}
-                        onClick={() => setSelectedCategory(
-                          selectedCategory === category.value ? '' : category.value
-                        )}
+                        variant={
+                          selectedCategory === category.value
+                            ? "solid"
+                            : "bordered"
+                        }
+                        color={
+                          selectedCategory === category.value
+                            ? "primary"
+                            : "default"
+                        }
+                        onClick={() =>
+                          setSelectedCategory(
+                            selectedCategory === category.value
+                              ? ""
+                              : category.value
+                          )
+                        }
                       >
                         {category.label}
                       </Chip>
@@ -399,45 +423,52 @@ const Products = () => {
         {/* Products Grid */}
         <div className="lg:col-span-3">
           {/* Active Filters */}
-          {(selectedCategory || searchQuery || priceRange.min || priceRange.max) && (
+          {(selectedCategory ||
+            searchQuery ||
+            priceRange.min ||
+            priceRange.max) && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-sm text-gray-500">Active Filters:</span>
-                
+
                 {selectedCategory && (
-                  <Chip 
-                    onClose={() => setSelectedCategory('')}
-                    variant="flat" 
+                  <Chip
+                    onClose={() => setSelectedCategory("")}
+                    variant="flat"
                     color="primary"
                   >
-                    Category: {categories.find(c => c.value === selectedCategory)?.label}
+                    Category:{" "}
+                    {
+                      categories.find((c) => c.value === selectedCategory)
+                        ?.label
+                    }
                   </Chip>
                 )}
-                
+
                 {searchQuery && (
-                  <Chip 
-                    onClose={() => setSearchQuery('')}
-                    variant="flat" 
+                  <Chip
+                    onClose={() => setSearchQuery("")}
+                    variant="flat"
                     color="primary"
                   >
                     Search: {searchQuery}
                   </Chip>
                 )}
-                
+
                 {priceRange.min && (
-                  <Chip 
-                    onClose={() => setPriceRange({ ...priceRange, min: '' })}
-                    variant="flat" 
+                  <Chip
+                    onClose={() => setPriceRange({ ...priceRange, min: "" })}
+                    variant="flat"
                     color="primary"
                   >
                     Min Price: ${priceRange.min}
                   </Chip>
                 )}
-                
+
                 {priceRange.max && (
-                  <Chip 
-                    onClose={() => setPriceRange({ ...priceRange, max: '' })}
-                    variant="flat" 
+                  <Chip
+                    onClose={() => setPriceRange({ ...priceRange, max: "" })}
+                    variant="flat"
                     color="primary"
                   >
                     Max Price: ${priceRange.max}
@@ -455,15 +486,13 @@ const Products = () => {
             <>
               {currentProducts.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No products found
+                  </h3>
                   <p className="text-gray-600 mb-4">
                     Try adjusting your search or filter criteria
                   </p>
-                  <Button
-                    color="primary"
-                    variant="flat"
-                    onClick={clearFilters}
-                  >
+                  <Button color="primary" variant="flat" onClick={clearFilters}>
                     Clear Filters
                   </Button>
                 </div>
