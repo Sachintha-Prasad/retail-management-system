@@ -1,5 +1,5 @@
 import { connect as _connect } from "mongoose"
-import logger from "../util/logger.js"
+import logger from "../utils/winstonLogger.js"
 
 const connectDB = async () => {
     try {
