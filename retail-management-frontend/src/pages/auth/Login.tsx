@@ -61,7 +61,7 @@ const Login = () => {
 
       {error && <p className="text-red-500 mb-2">{error}</p>}
 
-      <Button color="default" onClick={handleSubmit} fullWidth isDisabled={isLoading}>
+      <Button color="default" onClick={handleSubmit} fullWidth isDisabled={isLoading} className="mb-4">
         {isLoading ? <Spinner size="sm" /> : 'Login'}
       </Button>
       <div className="text-center text-sm text-gray-500">
