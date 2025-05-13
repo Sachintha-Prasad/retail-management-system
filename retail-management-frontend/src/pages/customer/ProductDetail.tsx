@@ -111,20 +111,9 @@ const ProductDetail = () => {
               <p className="text-gray-600">{product.description}</p>
             </div>
 
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Features
-              </h2>
-              <ul className="list-disc list-inside text-gray-600 space-y-2">
-                {product.features?.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
-            </div>
-
             <div className="pt-6">
               <Button
-                color="primary"
+                color="default"
                 size="lg"
                 startContent={<ShoppingCart size={20} />}
                 className="w-full"

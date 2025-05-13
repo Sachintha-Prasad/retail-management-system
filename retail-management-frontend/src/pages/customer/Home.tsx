@@ -1,18 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Button, 
-  Card, 
-  CardBody, 
-  CardFooter, 
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
   Divider,
   Image,
   Spinner
 } from '@nextui-org/react';
-import { ArrowRight, TrendingUp, ShieldCheck, Truck, Tag } from 'lucide-react';
+import {
+  ArrowRight,
+  TrendingUp,
+  ShieldCheck,
+  Truck,
+  Tag
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import ProductCard from '../../components/ui/ProductCard';
-import { getFeaturedProducts, Product } from '../../data/products';
+import { getProducts, Product } from '../../data/products';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -21,8 +27,9 @@ const Home = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const products = await getFeaturedProducts();
-        setFeaturedProducts(products);
+        const allProducts = await getProducts();
+        const featured = allProducts.filter(product => product.featured);
+        setFeaturedProducts(featured);
       } catch (error) {
         console.error('Error loading featured products:', error);
       } finally {
@@ -64,11 +71,11 @@ const Home = () => {
                 Discover a curated collection of high-quality products that bring elegance and functionality to your life.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button 
+                <Button
                   as={Link}
                   to="/products"
-                  color="primary" 
-                  variant="solid" 
+                  color="primary"
+                  variant="solid"
                   size="lg"
                   endContent={<ArrowRight size={16} />}
                   className="bg-white text-primary-700 font-medium"
@@ -122,25 +129,25 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { 
-                icon: <TrendingUp className="h-8 w-8" />, 
-                title: 'Trending Products', 
-                description: 'Stay ahead with our carefully curated selection of trending products.'
+              {
+                icon: <TrendingUp className="h-8 w-8" />,
+                title: 'Trending Products',
+                description: 'Stay ahead with our carefully curated selection of trending products.',
               },
-              { 
-                icon: <ShieldCheck className="h-8 w-8" />, 
-                title: 'Secure Shopping', 
-                description: 'Shop with confidence with our secure payment processing.'
+              {
+                icon: <ShieldCheck className="h-8 w-8" />,
+                title: 'Secure Shopping',
+                description: 'Shop with confidence with our secure payment processing.',
               },
-              { 
-                icon: <Truck className="h-8 w-8" />, 
-                title: 'Fast Delivery', 
-                description: 'Get your products delivered quickly with our expedited shipping.'
+              {
+                icon: <Truck className="h-8 w-8" />,
+                title: 'Fast Delivery',
+                description: 'Get your products delivered quickly with our expedited shipping.',
               },
-              { 
-                icon: <Tag className="h-8 w-8" />, 
-                title: 'Best Deals', 
-                description: 'Enjoy competitive prices on all our premium products.'
+              {
+                icon: <Tag className="h-8 w-8" />,
+                title: 'Best Deals',
+                description: 'Enjoy competitive prices on all our premium products.',
               }
             ].map((feature, index) => (
               <motion.div
@@ -262,7 +269,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonial Section */}
+      {/* Testimonials Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -283,7 +290,7 @@ const Home = () => {
               {
                 name: 'Sophia Williams',
                 role: 'Fashion Designer',
-                quote: 'The products are of exceptional quality. I\'ve been a loyal customer for years and have never been disappointed.',
+                quote: "The products are of exceptional quality. I've been a loyal customer for years and have never been disappointed.",
                 avatar: 'https://i.pravatar.cc/150?img=1',
               },
               {
@@ -344,11 +351,11 @@ const Home = () => {
               Join thousands of satisfied customers shopping with Elegance.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button 
+              <Button
                 as={Link}
                 to="/products"
-                color="primary" 
-                variant="solid" 
+                color="primary"
+                variant="solid"
                 size="lg"
                 className="bg-white text-primary-600 font-medium"
               >
