@@ -1,11 +1,16 @@
 import { createContext, useCallback, useState, ReactNode } from 'react';
+import { loginUser, registerUser } from '../data/auth';
 
 // Define user types
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: 'admin' | 'customer';
+  password?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
 // Define context type
@@ -14,31 +19,13 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string, role: 'admin' | 'customer') => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string, role: 'admin' | 'customer') => Promise<boolean>;
   logout: () => void;
   initAuth: () => void;
 }
 
 // Create context
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Sample users for demo
-const SAMPLE_USERS = [
-  {
-    id: '1',
-    name: 'Admin User',
-    email: 'admin@example.com',
-    password: 'admin123',
-    role: 'admin' as const,
-  },
-  {
-    id: '2',
-    name: 'Customer User',
-    email: 'customer@example.com',
-    password: 'customer123',
-    role: 'customer' as const,
-  },
-];
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const initAuth = useCallback(() => {
     setIsLoading(true);
     const storedUser = localStorage.getItem('user');
-    
+
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
@@ -57,66 +44,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem('user');
       }
     }
-    
+
     setIsLoading(false);
   }, []);
 
-  // Login function
+  // Login function using backend API
   const login = useCallback(async (email: string, password: string, role: 'admin' | 'customer'): Promise<boolean> => {
     setIsLoading(true);
-    
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const foundUser = SAMPLE_USERS.find(
-          (u) => u.email === email && u.password === password && u.role === role
-        );
-        
-        if (foundUser) {
-          const { password: _, ...userWithoutPassword } = foundUser;
-          setUser(userWithoutPassword);
-          localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-          setIsLoading(false);
-          resolve(true);
-        } else {
-          setIsLoading(false);
-          resolve(false);
-        }
-      }, 1000);
-    });
+    try {
+      const { user: loggedInUser } = await loginUser({ email, password });
+      if (loggedInUser.role !== role) {
+        setIsLoading(false);
+        return false;
+      }
+
+      const { password: _, ...cleanUser } = loggedInUser;
+      setUser(cleanUser);
+      localStorage.setItem('user', JSON.stringify(cleanUser));
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // Register function
-  const register = useCallback(async (name: string, email: string, password: string): Promise<boolean> => {
+  // Register function using backend API
+const register = useCallback(
+  async (name: string, email: string, password: string, role: 'admin' | 'customer'): Promise<boolean> => {
     setIsLoading(true);
-    
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Check if user already exists
-        const exists = SAMPLE_USERS.some((u) => u.email === email);
-        
-        if (!exists) {
-          // In a real app, we would create a new user in the database
-          // For this demo, we'll just simulate success
-          const newUser = {
-            id: `${SAMPLE_USERS.length + 1}`,
-            name,
-            email,
-            role: 'customer' as const,
-          };
-          
-          setUser(newUser);
-          localStorage.setItem('user', JSON.stringify(newUser));
-          setIsLoading(false);
-          resolve(true);
-        } else {
-          setIsLoading(false);
-          resolve(false);
-        }
-      }, 1000);
-    });
-  }, []);
+    try {
+      const { user: registeredUser } = await registerUser({ name, email, password, role });
+      const { password: _, ...cleanUser } = registeredUser;
+      setUser(cleanUser);
+      localStorage.setItem('user', JSON.stringify(cleanUser));
+      return true;
+    } catch (error) {
+      console.error('Register error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  },
+  []
+);
+
 
   // Logout function
   const logout = useCallback(() => {

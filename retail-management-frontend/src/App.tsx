@@ -27,15 +27,21 @@ import { EditProduct } from './pages/admin/products/EditProduct';
 import { Orders } from './pages/admin/orders/Orders';
 
 // Protected route wrapper
-const ProtectedRoute = ({ children, requiredRole }) => {
-  const { user, isAuthenticated } = useAuth();
+import { ReactNode } from 'react';
+
+const ProtectedRoute = ({ children, requiredRole }: { children: ReactNode; requiredRole?: string }) => {
+  const { user, isAuthenticated, isLoading } = useAuth(); // Make sure isLoading is included
   const location = useLocation();
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or use a loading spinner
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requiredRole && user.role !== requiredRole) {
+  if (requiredRole && user?.role !== requiredRole) {
     return <Navigate to="/" replace />;
   }
 
@@ -72,7 +78,7 @@ function App() {
         <Route 
           path="/cart" 
           element={
-            <ProtectedRoute requiredRole={null}>
+            <ProtectedRoute requiredRole="customer">
               <Cart />
             </ProtectedRoute>
           } 
@@ -80,7 +86,7 @@ function App() {
         <Route 
           path="/checkout" 
           element={
-            <ProtectedRoute requiredRole={null}>
+            <ProtectedRoute requiredRole="customer">
               <Checkout />
             </ProtectedRoute>
           } 
@@ -88,7 +94,7 @@ function App() {
         <Route 
           path="/order-confirmation" 
           element={
-            <ProtectedRoute requiredRole={null}>
+            <ProtectedRoute requiredRole="customer">
               <OrderConfirmation />
             </ProtectedRoute>
           } 
