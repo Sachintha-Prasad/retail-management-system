@@ -126,15 +126,20 @@ export const getProducts = async (): Promise<Product[]> => {
   );
   return response.data;
 };
-
-export const getProductById = (id: string): Promise<Product | undefined> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const product = products.find((p) => p.id === id);
-      resolve(product);
-    }, 500);
-  });
+export const getProductById = async (id: string): Promise<Product> => {
+  const response = await axios.get<Product>(
+    `http://localhost:8000/api/products/${id}`
+  );
+  return response.data;
 };
+// export const getProductById = (id: string): Promise<Product | undefined> => {
+//   return new Promise((resolve) => {
+//     setTimeout(() => {
+//       const product = products.find((p) => p.id === id);
+//       resolve(product);
+//     }, 500);
+//   });
+// };
 
 export const getFeaturedProducts = (): Promise<Product[]> => {
   return new Promise((resolve) => {
