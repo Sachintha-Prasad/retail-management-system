@@ -1,140 +1,161 @@
-import React from 'react';
-import { useCart } from '../../hooks/useCart';
+import React, { useRef, useContext } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { createOrder } from '../../data/orders';
+import { CartContext } from '../../context/CartContext';
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Input,
+  Button,
+  Divider,
+  Spacer,
+} from '@nextui-org/react';
 
 const Checkout = () => {
-  const { cart, total, clearCart } = useCart();
+  const cartContext = useContext(CartContext);
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  if (!cartContext) {
+    return <p>Loading...</p>;
+  }
+
+  const { items, subtotal, clearCart } = cartContext;
+
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const addressRef = useRef<HTMLInputElement>(null);
+  const cityRef = useRef<HTMLInputElement>(null);
+  const postalRef = useRef<HTMLInputElement>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically:
-    // 1. Process payment
-    // 2. Create order in database
-    // 3. Clear cart
-    clearCart();
-    navigate('/order-confirmation');
+
+    const name = nameRef.current?.value.trim();
+    const email = emailRef.current?.value.trim();
+    const address = addressRef.current?.value.trim();
+    const city = cityRef.current?.value.trim();
+    const postalCode = postalRef.current?.value.trim();
+
+    if (!name || !email || !address || !city || !postalCode) {
+      alert('Please fill out all fields');
+      return;
+    }
+
+    const orderPayload = {
+      customerId: JSON.parse(localStorage.getItem('user') || '{}')._id,
+      items: items.map((item) => ({
+        productId: item._id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+      total: subtotal,
+      address: {
+        line1: address,
+        city,
+        state: 'N/A',
+        postalCode,
+        country: 'Sri Lanka',
+      },
+    };
+
+    try {
+      await createOrder(orderPayload);
+      await clearCart();
+      navigate('/order-confirmation');
+    } catch (err) {
+      console.error('Order creation failed', err);
+      alert('Something went wrong while placing your order.');
+    }
   };
 
-  if (cart.length === 0) {
+  if (items.length === 0) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-          <button
-            onClick={() => navigate('/products')}
-            className="text-indigo-600 hover:text-indigo-800 font-medium"
-          >
-            Continue Shopping
-          </button>
-        </div>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
+        <h2 className="text-2xl font-bold">Your cart is empty</h2>
+        <Spacer y={2} />
+        <Button color="primary" variant="light" onClick={() => navigate('/products')}>
+          Continue Shopping
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Order Summary */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
-          <div className="space-y-4">
-            {cart.map((item) => (
-              <div key={item.id} className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">{item.name}</p>
-                  <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                </div>
-                <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+    <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Order Summary */}
+      <Card shadow="sm" className="w-full">
+        <CardHeader className="text-xl font-semibold">Order Summary</CardHeader>
+        <Divider />
+        <CardBody>
+          {items.map((item) => (
+            <div key={item._id} className="flex justify-between items-start mb-4">
+              <div>
+                <p className="font-medium">{item.name}</p>
+                <p className="text-sm text-default-500">Quantity: {item.quantity}</p>
               </div>
-            ))}
-            <div className="border-t pt-4 mt-4">
-              <div className="flex justify-between items-center font-semibold">
-                <p>Total</p>
-                <p>${total.toFixed(2)}</p>
-              </div>
+              <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
             </div>
+          ))}
+          <Divider className="my-4" />
+          <div className="flex justify-between text-lg font-semibold">
+            <p>Total</p>
+            <p>${subtotal.toFixed(2)}</p>
           </div>
-        </div>
+        </CardBody>
+      </Card>
 
-        {/* Checkout Form */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold mb-6">Shipping Information</h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                defaultValue={user?.name || ''}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                defaultValue={user?.email || ''}
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                Address
-              </label>
-              <input
-                type="text"
-                id="address"
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-
+      {/* Checkout Form */}
+      <Card shadow="sm" className="w-full">
+        <CardHeader className="text-xl font-semibold">Shipping Information</CardHeader>
+        <Divider />
+        <CardBody>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="text"
+              label="Full Name"
+              defaultValue={user?.name || ''}
+              ref={nameRef}
+              isRequired
+            />
+            <Input
+              type="email"
+              label="Email"
+              defaultValue={user?.email || ''}
+              ref={emailRef}
+              isRequired
+            />
+            <Input
+              type="text"
+              label="Address"
+              ref={addressRef}
+              isRequired
+            />
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                  City
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="postal" className="block text-sm font-medium text-gray-700">
-                  Postal Code
-                </label>
-                <input
-                  type="text"
-                  id="postal"
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                />
-              </div>
+              <Input
+                type="text"
+                label="City"
+                ref={cityRef}
+                isRequired
+              />
+              <Input
+                type="text"
+                label="Postal Code"
+                ref={postalRef}
+                isRequired
+              />
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 transition duration-200"
-            >
+            <Spacer y={2} />
+            <Button type="submit" color="default" fullWidth>
               Place Order
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
     </div>
   );
 };

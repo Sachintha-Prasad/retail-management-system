@@ -38,7 +38,7 @@ const CustomerNavbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSearch = (e) => {
+  const handleSearch = (e:any) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
@@ -96,23 +96,7 @@ const CustomerNavbar = () => {
       </NavbarContent>
 
       <NavbarContent justify="end">
-        <NavbarItem className="hidden md:flex">
-          <form onSubmit={handleSearch} className="relative">
-            <Input
-              classNames={{
-                base: "max-w-full sm:max-w-[18rem] h-9",
-                input: "text-sm",
-              }}
-              placeholder="Search products..."
-              startContent={<Search size={18} className="text-gray-400" />}
-              type="search"
-              variant="flat"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
-        </NavbarItem>
-
+       
         <NavbarItem>
           <Badge 
             content={totalItems} 

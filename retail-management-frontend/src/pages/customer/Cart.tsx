@@ -1,74 +1,96 @@
+
+import { useNavigate } from 'react-router-dom';
+import { Button, Card, CardBody, Spacer } from '@nextui-org/react';
 import { useCart } from '../../hooks/useCart';
 
 const Cart = () => {
-  const { cart, removeFromCart, updateQuantity } = useCart();
-
-  const calculateTotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
+  const navigate = useNavigate();
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    subtotal,
+    totalItems
+  } = useCart();
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
-      
-      {cart.length === 0 ? (
+      <h1 className="text-3xl font-bold mb-8">Shopping Cart ({totalItems})</h1>
+
+      {items.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-600 text-lg">Your cart is empty</p>
+          <Spacer y={1} />
+          <Button onClick={() => navigate('/products')}>Browse Products</Button>
         </div>
       ) : (
-        <div className="grid gap-8">
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            {cart.map((item) => (
-              <div key={item.id} className="border-b last:border-b-0 p-6">
-                <div className="flex items-center gap-6">
-                  <img 
-                    src={item.image} 
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="md:col-span-2 space-y-4">
+            {items.map(item => (
+              <Card key={item._id} className="shadow">
+                <CardBody className="flex items-center gap-6">
+                  <img
+                    src={item.image}
                     alt={item.name}
                     className="w-24 h-24 object-cover rounded"
                   />
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold">{item.name}</h3>
-                    <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                    <h4>{item.name}</h4>
+                    <p>${item.price.toFixed(2)}</p>
                     <div className="flex items-center gap-4 mt-2">
-                      <select
-                        value={item.quantity}
-                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                        className="border rounded px-2 py-1"
+                      <Button
+                        size="sm"
+                        disabled={item.quantity <= 1}
+                        onClick={() => updateQuantity(item._id, item.quantity - 1)}
                       >
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <option key={num} value={num}>
-                            {num}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-red-600 hover:text-red-800"
+                        -
+                      </Button>
+                      <p>{item.quantity}</p>
+                      <Button
+                        size="sm"
+                        onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                      >
+                        +
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => removeItem(item._id)}
                       >
                         Remove
-                      </button>
+                      </Button>
                     </div>
                   </div>
-                  <div className="text-lg font-semibold">
+                  <p className="text-lg font-semibold">
                     ${(item.price * item.quantity).toFixed(2)}
-                  </div>
-                </div>
-              </div>
+                  </p>
+                </CardBody>
+              </Card>
             ))}
           </div>
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-center text-xl font-semibold">
-              <span>Total</span>
-              <span>${calculateTotal().toFixed(2)}</span>
-            </div>
-            <button
-              onClick={() => window.location.href = '/checkout'}
-              className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Proceed to Checkout
-            </button>
-          </div>
+
+          <Card className="shadow">
+            <CardBody>
+              <div className="flex justify-between items-center text-xl font-semibold">
+                <p>Total</p>
+                <p>${subtotal.toFixed(2)}</p>
+              </div>
+              <Spacer y={1} />
+              <Button
+                className="w-full"
+                onClick={() => navigate('/checkout')}
+              >
+                Proceed to Checkout
+              </Button>
+              <Spacer y={0.5} />
+              <Button
+                className="w-full"
+                onClick={clearCart}
+              >
+                Clear Cart
+              </Button>
+            </CardBody>
+          </Card>
         </div>
       )}
     </div>

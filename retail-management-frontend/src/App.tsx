@@ -30,23 +30,26 @@ import { Orders } from './pages/admin/orders/Orders';
 import { ReactNode } from 'react';
 
 const ProtectedRoute = ({ children, requiredRole }: { children: ReactNode; requiredRole?: string }) => {
-  const { user, isAuthenticated, isLoading } = useAuth(); // Make sure isLoading is included
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+  const userRole = JSON.parse(localStorage.getItem("user") || "{}").role;
 
   if (isLoading) {
-    return <div>Loading...</div>; // Or use a loading spinner
+    return <div>Loading...</div>;
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
+  // Admins can access customer pages too
+  if (requiredRole && userRole !== requiredRole && userRole !== 'admin') {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 };
+
 
 function App() {
   const { initAuth } = useAuth();

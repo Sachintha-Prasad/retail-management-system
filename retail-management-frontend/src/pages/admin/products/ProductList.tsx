@@ -92,7 +92,7 @@ export function ProductList() {
       </div>
       <Card>
         <CardBody>
-          <Table isStriped aria-label="Products">
+          <Table isStriped aria-label="Products" shadow='none'>
             <TableHeader>
               <TableColumn>Name</TableColumn>
               <TableColumn>Category</TableColumn>

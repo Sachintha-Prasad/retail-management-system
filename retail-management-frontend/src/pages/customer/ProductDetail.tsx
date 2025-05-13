@@ -1,24 +1,27 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Card, CardBody, Image, Spinner } from "@nextui-org/react";
+import { Button, Card, CardBody, Image, Spinner, Input } from "@nextui-org/react";
 import { ShoppingCart, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { useCart } from "../../hooks/useCart";
 import { getProductById, Product } from "../../data/products";
+import { useCart } from "../../hooks/useCart";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [quantity, setQuantity] = useState<number>(1);
+  const {
+    addItem
+  } = useCart();
   useEffect(() => {
     const loadProduct = async () => {
       try {
         if (id) {
           const productData = await getProductById(id);
           setProduct(productData);
+          setQuantity(productData.stock > 0 ? 1 : 0);
           console.log("Product data:", productData);
         }
       } catch (error) {
@@ -59,6 +62,16 @@ const ProductDetail = () => {
     );
   }
 
+  const handleQuantityChange = (value: number) => {
+    if (value < 1) {
+      setQuantity(1);
+    } else if (value > product.stock) {
+      setQuantity(product.stock);
+    } else {
+      setQuantity(value);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Button
@@ -96,19 +109,33 @@ const ProductDetail = () => {
         >
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {product.name}
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
               <p className="text-2xl font-semibold text-primary-600">
                 ${product.price.toFixed(2)}
               </p>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Description
-              </h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Description</h2>
               <p className="text-gray-600">{product.description}</p>
+            </div>
+
+            {/* Quantity Selector with NextUI */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Quantity</h2>
+              <div className="flex items-center space-x-2">
+                <Button size="sm" onClick={() => handleQuantityChange(quantity - 1)}>-</Button>
+                <Input
+                  type="number"
+                  min={1}
+                  max={product.stock}
+                  value={quantity.toString()}
+                  onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10))}
+                  size="sm"
+                />
+                <Button size="sm" onClick={() => handleQuantityChange(quantity + 1)}>+</Button>
+              </div>
+              <p className="text-sm text-gray-500">{product.stock} available</p>
             </div>
 
             <div className="pt-6">
@@ -117,12 +144,24 @@ const ProductDetail = () => {
                 size="lg"
                 startContent={<ShoppingCart size={20} />}
                 className="w-full"
-                onClick={() => {
-                  addToCart(product);
+                onClick={async () => {
+                  if (!product) return;
+                  await addItem(
+                    {
+                      _id: product.id,
+                      productId: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image: product.image,
+                    },
+                    quantity
+                  );
                   navigate("/cart");
                 }}
+
+                disabled={product.stock === 0}
               >
-                Add to Cart
+                {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
               </Button>
             </div>
           </div>
