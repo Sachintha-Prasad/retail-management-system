@@ -1,6 +1,14 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { addToCart, Cart, CartItem, CartItemPayload, clearUserCart, getCart, removeFromCart, updateCartItem } from '../data/cart';
-
+import {
+  addToCart,
+  CartItem,
+  CartItemPayload,
+  clearUserCart,
+  getCart,
+  removeFromCart,
+  updateCartItem,
+} from '../data/cart';
+import { useAuth } from '../hooks/useAuth';
 
 interface CartContextType {
   items: CartItem[];
@@ -15,29 +23,28 @@ interface CartContextType {
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const customerId = React.useMemo(() => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user)._id : '';
-  }, []);
+  const { user } = useAuth();                    // ← get user from AuthContext
+  const customerId = user?._id || '';            // ← derive id here
 
-  // Load cart on mount
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  // 1️⃣ Whenever customerId changes, fetch their cart
   useEffect(() => {
-    if (!customerId) return;
+    if (!customerId) {
+      setItems([]);   // clear local state if logged out
+      return;
+    }
+
     getCart(customerId)
-      .then(handleCartResponse)
+      .then(cart => setItems(cart.items))
       .catch(() => setItems([]));
   }, [customerId]);
 
-  const handleCartResponse = (cart: Cart) => {
-    setItems(cart.items);
-  };
-
-  // Sync local state with server
+  // helper to reload from server
   const syncCart = async () => {
     if (!customerId) return;
     const cart = await getCart(customerId);
-    handleCartResponse(cart);
+    setItems(cart.items);
   };
 
   const addItem = async (
@@ -45,11 +52,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     quantity = 1
   ) => {
     if (!customerId) return;
-    const payload: CartItemPayload = {
-      customerId,
-      productId: newItem.productId,
-      quantity,
-    };
+    const payload: CartItemPayload = { customerId, productId: newItem.productId, quantity };
     await addToCart(payload);
     await syncCart();
   };
@@ -57,6 +60,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const removeItem = async (productId: string) => {
     if (!customerId) return;
     await removeFromCart({ customerId, productId });
+    // optionally you could re-sync rather than filter locally:
     setItems(prev => prev.filter(item => item.productId !== productId));
   };
 
@@ -78,7 +82,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal   = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <CartContext.Provider
