@@ -22,7 +22,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     e.stopPropagation();
 
     addItem({
-      id: product.id,
+      productId: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
